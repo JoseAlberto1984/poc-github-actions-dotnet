@@ -1,28 +1,54 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: .NET CI/CD
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build:
 
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore DemoApi/DemoApi.sln
-    - name: Build
-      run: dotnet build DemoApi/DemoApi.sln --no-restore -c Release
-    - name: Test
-      run: dotnet test DemoApi/DemoApi.sln --no-build -c Release
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore DemoApi/DemoApi.csproj
+
+      - name: Build
+        run: dotnet build DemoApi/DemoApi.csproj --no-restore
+
+      - name: Test
+        run: dotnet test DemoApi/DemoApi.csproj --no-build --verbosity normal
+
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: dev
+
+    steps:
+      - name: Deploy to DEV
+        run: echo "Deploying application to DEV environment"
+
+
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+
+    environment:
+      name: prod
+
+    steps:
+      - name: Deploy to PROD
+        run: echo "Deploying application to PROD environment"
